@@ -21,27 +21,56 @@ public class MainActivity extends AppCompatActivity {
         layoutOnScreen = findViewById(R.id.layout);
     }
 
+    /**
+     * Вызывается при первом показе меню
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.animations, menu);
         return true;
     }
 
+    /**
+     * Вызывается каждый раз перед отображением меню
+     */
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    /**
+     * Вызывается каждый раз, когда мы нажимаем на меню
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_kotik:
-                saySomethingCat();
                 return true;
             case R.id.menu_snake:
-                saySomethingSnake();
+                item.setChecked(!item.isChecked());
+                return true;
+            case R.id.menu_noise:
+                saySomethingCat();
+                saySomethingSnake(item);
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 
-    private void saySomethingSnake() {
-        Snackbar.make(layoutOnScreen, "Пшшш-шшш-шшш", Snackbar.LENGTH_SHORT).show();
+    @Override
+    protected void onResume() {
+        super.onResume();
+        startMyAnimation();
+    }
+
+    private void startMyAnimation() {
+
+    }
+
+    private void saySomethingSnake(MenuItem item) {
+        String saying = item.isChecked() ? "Пшш-шш-шш" : "Вы слышите какой-то шорох";
+        Snackbar.make(layoutOnScreen, saying, Snackbar.LENGTH_SHORT).show();
     }
 
     private void saySomethingCat() {
