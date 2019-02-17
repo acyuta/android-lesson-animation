@@ -14,7 +14,6 @@
         <item
             android:id="@+id/menu_snake"
             android:icon="@drawable/ic_cat_foot"
-            android:checkable="true"
             android:title="Змея шипит" />
 
         <item

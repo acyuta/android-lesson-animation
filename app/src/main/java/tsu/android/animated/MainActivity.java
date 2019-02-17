@@ -1,24 +1,39 @@
 package tsu.android.animated;
 
+import androidx.annotation.DrawableRes;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 
+import android.animation.Animator;
+import android.animation.ValueAnimator;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.android.material.snackbar.Snackbar;
 
+import java.util.Random;
+
 public class MainActivity extends AppCompatActivity {
 
     View layoutOnScreen;
+    ImageView imageView;
+
+    boolean rotationFlag = false;
+    int directionX = 1;
+    int directionY = 1;
+    int initColor = 360;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         layoutOnScreen = findViewById(R.id.layout);
+        imageView = findViewById(R.id.image_view);
     }
 
     /**
@@ -45,9 +60,10 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_kotik:
+                setDrawableToImageById(R.drawable.ic_black_cat);
                 return true;
             case R.id.menu_snake:
-                item.setChecked(!item.isChecked());
+                setDrawableToImageById(R.drawable.ic_snake);
                 return true;
             case R.id.menu_noise:
                 saySomethingCat();
@@ -58,6 +74,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void setDrawableToImageById(@DrawableRes int resId) {
+        imageView.setImageDrawable(VectorDrawableCompat.create(getResources(), resId, null));
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -65,7 +85,72 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startMyAnimation() {
+        final ValueAnimator animation = ValueAnimator
+                .ofFloat(0f, 1f)
+                .setDuration(3000 /* ms = 1/1000 s*/);
+        final float[] hsv = new float[]{0, 0.8f, 1};
 
+
+        animation.setRepeatMode(ValueAnimator.RESTART);
+        animation.setRepeatCount(ValueAnimator.INFINITE);
+        animation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float value = (float) animation.getAnimatedValue();
+                move(value);
+                changeColor(value, hsv);
+            }
+        });
+        animation.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+                Random random = new Random(System.currentTimeMillis());
+                rotationFlag = !rotationFlag;
+                directionX = random.nextBoolean() ? 1 : -1;
+                directionY = random.nextBoolean() ? 1 : -1;
+                initColor = random.nextInt(360);
+            }
+        });
+        animation.start();
+    }
+
+    private void changeColor(float a, float[] hsv) {
+        float value = a < 0.5f ? a : 1 - a;
+        hsv[0] = (initColor + (360 * value)) % 360;
+        layoutOnScreen.setBackgroundColor(Color.HSVToColor(hsv));
+
+    }
+
+    private void move(float a) {
+        float value = a < 0.5f ? a : 1 - a;
+        float translationX = directionX * value * 500;
+        float translationY = directionY * value * 500;
+        imageView.setTranslationX(translationX);
+        imageView.setTranslationY(translationY);
+        if (rotationFlag) {
+            imageView.setRotation(2 * 360 * value);
+        } else {
+            imageView.setRotation(2 * -360 * value);
+        }
+    }
+
+    private int dp2px(int dp) {
+        return (int) (getResources().getDisplayMetrics().density * dp + 0.5f);
     }
 
     private void saySomethingSnake(MenuItem item) {
